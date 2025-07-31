@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>中国省份地图（点击跳转）</title>
-  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  <script src="echarts.min.js"></script>
   <style>
     html, body {
       margin: 0;
@@ -96,7 +96,7 @@
       { name: '陕西', value: 1 },
     ];
 
-    fetch('/100000_full.json')
+    fetch('china.json')
       .then(res => res.json())
       .then(geoJson => {
         echarts.registerMap('china', geoJson);
