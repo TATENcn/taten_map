@@ -2,135 +2,303 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <title>中国省份地图（点击跳转）</title>
-  <script src="echarts.min.js"></script>
+  <title>中国地图下钻+标记点（完整功能版）</title>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5"></script>
   <style>
-    html, body {
+    html, body, #main {
       margin: 0;
       padding: 0;
+      width: 100%;
       height: 100%;
     }
-    #main {
-      width: 100%;
-      height: 100vh;
+    .info-panel {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      z-index: 1000;
     }
   </style>
 </head>
 <body>
   <div id="main"></div>
-
+  <div class="info-panel">
+    <div>单击地区：下钻到下一级</div>
+    <div>单击标记点：跳转网站</div>
+    <div>双击空白：返回上一级</div>
+  </div>
   <script>
-    const chart = echarts.init(document.getElementById('main'));
+      const chart = echarts.init(document.getElementById('main'));
+      let levelStack = []; // 记录下钻历史，用于返回
 
-    const markPoints = [
-        {
-            name: '济南市 平阴县',
-            value: [116.2, 36.1],
-            label: { formatter: '群主' }
-        },
-        {
-            name: '济南市 平阴县',
-            value: [116.5, 36.2960],
-            label: { formatter: 'susan' }
-        },
-        {
-            name: '汕头市 潮阳区',
-            value: [116.6822, 23.3535],
-            label: { formatter: 'Yaten' }
-        },
-        {
-            name: '北京市',
-            value: [116.4074, 39.9042],
-            label: { formatter: 'hungryHenry' }
-        },
-        {
-            name: '厦门市',
-            value: [118.0895, 24.4798],
-            label: { formatter: '叶子' }
-        },
-        {
-            name: '宁波市 鄞州区',
-            value: [121.5440, 29.8683],
-            label: { formatter: 'GuYang17' }
-        },
-        {
-            name: '肇兴市 四会市',
-            value: [112.7330, 23.3265],
-            label: { formatter: 'Lukemich' }
-        },
-        {
-            name: '揭阳市',
-            value: [115.6, 24],
-            label: { formatter: '❤️萤宝萤宝❤️' }
-        },
-        {
-            name: '南京市',
-            value: [118.7969, 32.0603],
-            label: { formatter: 'Errorsia' }
-        },
-        {
-            name: '咸阳市',
-            value: [108.70899, 34.3296],
-            label: { formatter: 'HHYYYY' }
-        },
-         {
-            name: '临沂市',
-            value: [118.3418084, 35.0535022],
-            label: { formatter: 'Ruibin_Ningh' }
-        },
-    ];
-
-    const nameToURL = {
-        '群主': 'https://home.linmohan.fun/',
-        'Yaten': 'https://yaten.xyz/',
-        'HungryHenry': 'https://hungryhenry.cn/',
-        '叶子': 'https://002.lgcm.xyz/',
-        'GuYang17': 'https://guyang17.github.io/',
-        'Errorsia': 'https://errorsia.com/',
-        'HHYYYY': 'https://hhyyyy.cn/',
-        'Ruibin_Ningh' :'https://www.ruibin-ningh.top/'
-    };
-
-
-    const provinceData = [
-      { name: '山东', value: 3 },
-      { name: '广东', value: 3 },
-      { name: '福建', value: 1 },
-      { name: '北京', value: 1 },
-      { name: '浙江', value: 1 },
-      { name: '江苏', value: 1 },
-      { name: '陕西', value: 1 },
-    ];
-
-    fetch('china.json')
-      .then(res => res.json())
-      .then(geoJson => {
-        echarts.registerMap('china', geoJson);
-
-        chart.setOption({
-          title: {
-            text: '中国省份地图（含标注点击跳转）',
-            left: 'center',
-            top: 10
+      // 标记点数据
+      const markPoints = [
+          {
+              pvs: '山东',
+              name: '济南市 平阴县',
+              value: [116.45619, 36.28927],
+              label: { formatter: '群主' }
           },
-          tooltip: {
-            trigger: 'item',
-            formatter: '{b}'
+          {
+              pvs: '山东',
+              name: '济南市 平阴县',
+              value: [116.5, 36.2960],
+              label: { formatter: 'susan' }
           },
-          geo: {
-            map: 'china',
-            roam: true,
-            label: { show: true },
-            emphasis: { label: { show: true } }
+          {
+              pvs: '广东',
+              name: '汕头市 潮阳区',
+              value: [116.6822, 23.3535],
+              label: { formatter: 'Yaten' }
           },
-          series: [
+          {
+              pvs: '北京',
+              name: '北京市 海淀区',
+              value: [116.3103, 39.9923],
+              label: { formatter: 'hungryHenry' }
+          },
+          {
+              pvs: '福建',
+              name: '厦门市',
+              value: [118.0895, 24.4798],
+              label: { formatter: '叶子' }
+          },
+          {
+              pvs: '浙江',
+              name: '宁波市 鄞州区',
+              value: [121.5440, 29.8683],
+              label: { formatter: 'GuYang17' }
+          },
+          {
+              pvs: '广东',
+              name: '肇庆市 四会市',
+              value: [112.7330, 23.3265],
+              label: { formatter: 'Lukemich' }
+          },
+          {
+              pvs: '江苏',
+              name: '南京市',
+              value: [118.7969, 32.0603],
+              label: { formatter: 'Errorsia' }
+          },
+          {
+              pvs: '陕西',
+              name: '咸阳市 秦都区',
+              value: [108.71493, 34.33804],
+              label: { formatter: 'HHYYYY' }
+          },
+          {
+              pvs: '山东',
+              name: '临沂市',
+              value: [118.3418084, 35.0535022],
+              label: { formatter: 'Ruibin_Ningh' }
+          },
+          {
+              pvs: '北京',
+              name: '北京市 大兴区',
+              value: [116.317804, 39.633624],
+              label: { formatter: 'Zyx' }
+          }
+      ];
+
+      // 名字到URL的映射
+      const nameToURL = {
+          '群主': 'https://home.linmohan.fun/',
+          'Yaten': 'https://yaten.xyz/',
+          'hungryHenry': 'https://hungryhenry.cn/',
+          '叶子': 'https://002.lgcm.xyz/',
+          'GuYang17': 'https://guyang17.github.io/',
+          'Errorsia': 'https://errorsia.com/',
+          'HHYYYY': 'https://hhyyyy.cn/',
+          'Ruibin_Ningh': 'https://www.ruibin-ningh.top/',
+          'Zyx': 'https://blog.zyx-2012.cn/'
+      };
+
+      function getMapUrlByCode(code) {
+        if (code === '100000') {
+          return 'https://geojson.cn/api/china/100000.json';
+        } else if (code.length === 6) {
+          return `https://geojson.cn/api/china/${code}.json`;
+        } else if (code.includes('/')) {
+          return `https://geojson.cn/api/china/${code}.json`;
+        }
+      }
+
+      // 关键修改：增加 provinceName 参数
+      function loadMap(code, name, showMarkers = true, provinceName = null) {
+        const url = getMapUrlByCode(code);
+        fetch(url)
+          .then(res => {
+            if (!res.ok) throw new Error(`加载失败：${res.status}`);
+            return res.json();
+          })
+          .then(geoJson => {
+            echarts.registerMap(name, geoJson);
+            
+            const series = [
+              {
+                name: '地区',
+                type: 'map',
+                map: name,
+                geoIndex: 0,
+                emphasis: {
+                  itemStyle: {
+                    areaColor: '#389BB7'
+                  }
+                }
+              }
+            ];
+
+            if (showMarkers) {
+              // 关键修改：根据 provinceName 过滤标记点
+              let filteredMarkPoints = markPoints;
+              if (provinceName) {
+                filteredMarkPoints = markPoints.filter(point => point.pvs === provinceName);
+              }
+              
+              series.push({
+                name: '标注',
+                type: 'scatter',
+                coordinateSystem: 'geo',
+                symbol: 'pin',
+                symbolSize: 50,
+                label: {
+                  show: true,
+                  color: 'black',
+                  fontWeight: 'bold',
+                  fontSize: 12
+                },
+                itemStyle: {
+                  color: '#e74c3c'
+                },
+                data: filteredMarkPoints, // 使用过滤后的数据
+                zlevel: 2
+              });
+            }
+
+            chart.setOption({
+              title: {
+                text: name + (showMarkers ? '（含标注点击跳转）' : ''),
+                left: 'center',
+                top: 10
+              },
+              geo: {
+                map: name,
+                roam: true,
+                center: null,
+                zoom: 1,
+                label: { 
+                  show: true,
+                  color: '#000'
+                },
+                emphasis: { 
+                  label: { 
+                    show: true,
+                    color: '#fff'
+                  }
+                },
+                itemStyle: {
+                  areaColor: '#f0f0f0',
+                  borderColor: '#999'
+                }
+              },
+              tooltip: {
+                trigger: 'item',
+                formatter: function(params) {
+                  if (params.seriesName === '标注') {
+                    return params.data.name + '<br/>' + params.data.label.formatter;
+                  }
+                  return params.name;
+                }
+              },
+              series: series
+            });
+
+            levelStack.push({ code, name, geoJson, showMarkers, provinceName }); // 存储 provinceName
+          })
+          .catch(error => {
+            console.error('地图加载失败:', error);
+            alert('地图数据加载失败: ' + error.message);
+          });
+      }
+
+      // 默认加载全国地图
+      loadMap('100000', '中国', true, null);
+
+      // 点击事件处理
+      chart.on('click', params => {
+        // 如果点击的是标记点，跳转到对应网站
+        if (params.seriesName === '标注') {
+          const person = params.data?.label?.formatter;
+          if (nameToURL[person]) {
+            window.open(nameToURL[person], '_blank');
+            return;
+          }
+        }
+
+        // 如果点击的是地区，进行下钻
+        if (params.seriesName === '地区') {
+          const currentMap = echarts.getMap(chart.getOption().geo[0].map);
+          if (!currentMap || !currentMap.geoJson) return;
+
+          const feature = currentMap.geoJson.features.find(f => f.properties.name === params.name);
+          if (!feature) return;
+
+          const code = feature.properties.code;
+          const level = feature.properties.level;
+          const filename = feature.properties.filename;
+
+          // 如果点击的是省级地区，则下钻并显示该省的标记点
+          if (level === 1) {
+              // 关键修改：传入省份名称，并显示标记点
+              loadMap(filename || code, feature.properties.fullname || params.name, true, params.name);
+          } else if (level === 0) {
+            // 全国地图下钻到省，不显示标记点
+            loadMap(filename || code, feature.properties.fullname || params.name, false, null);
+          } else {
+            console.log('已到最底层：', feature.properties.name);
+          }
+        }
+      });
+
+      // 双击空白区域返回上一级
+      chart.getZr().on('dblclick', (event) => {
+        // 检查是否点击在图表元素上
+        const target = event.target;
+        if (target && target.type !== 'group') return;
+
+        if (levelStack.length > 1) {
+          levelStack.pop(); // 移除当前
+          const prev = levelStack[levelStack.length - 1];
+          echarts.registerMap(prev.name, prev.geoJson);
+          
+          const series = [
             {
-              name: '省份',
+              name: '地区',
               type: 'map',
-              map: 'china',
-              geoIndex: 0
-            },
-            {
+              map: prev.name,
+              geoIndex: 0,
+              emphasis: {
+                itemStyle: {
+                  areaColor: '#389BB7'
+                }
+              }
+            }
+          ];
+
+          // 如果返回的层级需要显示标记点，就添加
+          if (prev.showMarkers) {
+            // 关键修改：根据存储的 provinceName 过滤标记点
+            let filteredMarkPoints = markPoints;
+            if (prev.provinceName) {
+              filteredMarkPoints = markPoints.filter(point => point.pvs === prev.provinceName);
+            }
+
+            series.push({
               name: '标注',
               type: 'scatter',
               coordinateSystem: 'geo',
@@ -139,23 +307,54 @@
               label: {
                 show: true,
                 color: 'black',
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                fontSize: 12
               },
               itemStyle: {
                 color: '#e74c3c'
               },
-              data: markPoints
-            }
-          ]
-        });
+              data: filteredMarkPoints,
+              zlevel: 2
+            });
+          }
 
-        chart.on('click', function (params) {
-        const person = params.data?.label?.formatter;
-        if (nameToURL[person]) {
-            window.open(nameToURL[person], '_blank');
+          chart.setOption({
+            title: {
+              text: prev.name + (prev.showMarkers ? '（含标注点击跳转）' : ''),
+              left: 'center',
+              top: 10
+            },
+            geo: {
+              map: prev.name,
+              roam: true,
+              label: { 
+                show: true,
+                color: '#000'
+              },
+              emphasis: { 
+                label: { 
+                  show: true,
+                  color: 'black'
+                }
+              },
+              itemStyle: {
+                areaColor: '#f0f0f0',
+                borderColor: '#999'
+              }
+            },
+            tooltip: {
+              trigger: 'item',
+              formatter: function(params) {
+                if (params.seriesName === '标注') {
+                  return params.data.name + '<br/>' + params.data.label.formatter;
+                }
+                return params.name;
+              }
+            },
+            series: series
+          });
         }
-        });
       });
   </script>
-</body>
+</body> 
 </html>
