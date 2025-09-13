@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <title>中国地图下钻+标记点（完整功能版）</title>
+  <title>TATEN 成员分布图</title>
   <script src="https://cdn.jsdelivr.net/npm/echarts@5"></script>
   <style>
     html, body, #main {
@@ -40,55 +40,55 @@
           {
               pvs: '山东',
               name: '济南市 平阴县',
-              value: [116.45619, 36.28927],
+              value: [117.08, 36.67],
               label: { formatter: '群主' }
           },
           {
               pvs: '山东',
               name: '济南市 平阴县',
-              value: [116.5, 36.2960],
+              value: [116.45, 36.285],
               label: { formatter: 'susan' }
           },
           {
               pvs: '广东',
               name: '汕头市 潮阳区',
-              value: [116.6822, 23.3535],
+              value: [116.6822000, 23.3535000],
               label: { formatter: 'Yaten' }
           },
           {
               pvs: '北京',
               name: '北京市 海淀区',
-              value: [116.3103, 39.9923],
+              value: [116.3103000, 39.9923000],
               label: { formatter: 'hungryHenry' }
           },
           {
               pvs: '福建',
               name: '厦门市',
-              value: [118.0895, 24.4798],
+              value: [118.0895000, 24.4798000],
               label: { formatter: '叶子' }
           },
           {
               pvs: '浙江',
               name: '宁波市 鄞州区',
-              value: [121.5440, 29.8683],
+              value: [121.5440000, 29.8683000],
               label: { formatter: 'GuYang17' }
           },
           {
               pvs: '广东',
               name: '肇庆市 四会市',
-              value: [112.7330, 23.3265],
+              value: [112.7330000, 23.3265000],
               label: { formatter: 'Lukemich' }
           },
           {
               pvs: '江苏',
               name: '南京市',
-              value: [118.7969, 32.0603],
+              value: [118.7969000, 32.0603000],
               label: { formatter: 'Errorsia' }
           },
           {
               pvs: '陕西',
               name: '咸阳市 秦都区',
-              value: [108.71493, 34.33804],
+              value: [108.7149300, 34.3380400],
               label: { formatter: 'HHYYYY' }
           },
           {
@@ -100,14 +100,20 @@
           {
               pvs: '北京',
               name: '北京市 大兴区',
-              value: [116.317804, 39.633624],
+              value: [116.3178040, 39.6336240],
               label: { formatter: 'Zyx' }
           },
           {
               pvs: '上海',
               name: '上海市 浦东新区',
-              value: [121.506, 31.235],
+              value: [121.5060000, 31.2350000],
               label: { formatter: 'HalFLinE' }
+          },
+          {
+              pvs: '云南',
+              name: '昆明市',
+              value: [102.7122510, 25.0406090],
+              label: { formatter: 'CN059' }
           }
       ];
 
@@ -121,7 +127,8 @@
           'Errorsia': 'https://errorsia.com/',
           'HHYYYY': 'https://hhyyyy.cn/',
           'Ruibin_Ningh': 'https://www.ruibin-ningh.top/',
-          'Zyx': 'https://blog.zyx-2012.cn/'
+          'Zyx': 'https://blog.zyx-2012.cn/',
+          'CN059': 'https://www.cn059.com/'
       };
 
       function getMapUrlByCode(code) {
